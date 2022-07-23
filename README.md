@@ -4,8 +4,6 @@ The program packages the target files into a key-value store that can be connect
 
 ## Example 
 
-If you have files
-
 hello.txt: 
 ```
 HelloWorld
@@ -22,12 +20,7 @@ resources.txt:
 another_key ./foo.txt
 ```
 
-then the command 
-``` 
-ircc resources.txt ircc_resources.gen.cpp 
-```
-
-give you this cpp file:
+If you have files `hello.txt`, `foo.txt`, `resources.txt` then the command `ircc resources.txt ircc_resources.gen.cpp` give you this cpp file:
 ``` 
 #include <map>
 #include <string>
