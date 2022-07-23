@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string>
 
-const char *ircc_c_string(const char *key, size_t *sizeptr);
+extern "C" const char *ircc_c_string(const char *key, size_t *sizeptr);
 std::string ircc_string(const char *key);
 
 #endif

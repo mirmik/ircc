@@ -29,7 +29,7 @@ another_key ./foo.txt
 
 If you have files `hello.txt`, `foo.txt`, `resources.txt` then the `ircc` command give you cpp file:
 ```
-ircc resources.txt ircc_resources.gen.cpp
+ircc resources.txt -o ircc_resources.gen.cpp
 ``` 
 ``` 
 #include <map>

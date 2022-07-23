@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <fstream>
+#include <getopt.h>
 #include <iostream>
 #include <map>
 #include <string>
@@ -215,7 +216,7 @@ std::string compile_ircc_resources_map_by_mnemos(std::vector<KeyBytes> keybytes)
 std::string compile_ircc_resources_map_cstyle(std::vector<KeyBytes> keybytes)
 {
 
-    std::string compiled;
+    std::string compiled = "";
     compiled += "struct key_value_size IRCC_RESOURCES_[] = {\n";
     for (size_t i = 0; i < keybytes.size(); ++i)
     {
@@ -270,7 +271,8 @@ std::string text_binary_search_function()
 
 std::string text_c_functions()
 {
-    return R"(const char *ircc_c_string(const char *key, size_t *sizeptr)
+    return R"(extern "C" const char *ircc_c_string(const char *key, size_t *sizeptr);
+const char *ircc_c_string(const char *key, size_t *sizeptr)
 {
     struct key_value_size *kvs = ircc_binary_search(key);
     if (kvs == NULL)
@@ -294,10 +296,56 @@ std::string text_cxx_functions()
 )";
 }
 
+void print_help()
+{
+    std::cout << "Usage: ircc [options] [file]\n";
+    std::cout << "Options:\n";
+    std::cout << "\t-h, --help\tShow this help\n";
+    std::cout << "\t-c, --c_only\tMake C file instead C++\n";
+}
+
 int main(int argc, char **argv)
 {
     bool CPP_ENABLED = true;
-    bool include_map = true;
+    std::string OUTFILE = "ircc_resources.gen.cpp";
+
+    const struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"c_only", no_argument, NULL, 'c'},
+        {"output", required_argument, NULL, 'o'},
+    };
+
+    int long_index = 0;
+    int opt = 0;
+
+    while ((opt = getopt_long(argc, argv, "hco:", long_options, &long_index)) !=
+           -1)
+    {
+        switch (opt)
+        {
+        case 'h':
+            print_help();
+            exit(0);
+
+        case 'c':
+            CPP_ENABLED = false;
+            break;
+
+        case 'o':
+            OUTFILE = optarg;
+            break;
+
+        case '?':
+            exit(-1);
+            break;
+
+        case 0:
+            std::cout << "getopt error\n";
+            exit(-1);
+            break;
+        }
+    };
+    bool include_map = CPP_ENABLED;
 
     if (argc < 3)
     {
@@ -306,9 +354,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::string listfile = argv[1];
-    std::string outfile = argv[2];
-
+    std::string listfile = argv[optind];
     auto sources = get_sources_from_file(listfile);
 
     int errors = check_exists(sources);
@@ -320,15 +366,18 @@ int main(int argc, char **argv)
 
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
-    std::ofstream out(outfile);
+    std::ofstream out(OUTFILE);
     out << compile_headers(CPP_ENABLED, include_map);
     out << "\n";
     out << compile_ircc_resources_consts(keybytes);
     out << text_struct_key_value_size();
     out << "\n";
     out << compile_ircc_resources_map_cstyle(keybytes);
-    out << "\n";
-    out << compile_ircc_resources_map_by_mnemos(keybytes);
+    if (CPP_ENABLED)
+    {
+        out << "\n";
+        out << compile_ircc_resources_map_by_mnemos(keybytes);
+    }
     out << "\n";
     out << text_binary_search_function();
     out << "\n";
