@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -20,6 +21,12 @@ struct KeyBytes
 {
     std::string key;
     std::string bytes;
+};
+
+struct KeyBytesDivided
+{
+    std::string key;
+    std::string bytes_divided;
 };
 
 uint8_t HIHALF(uint8_t byte)
@@ -60,51 +67,78 @@ std::vector<KeySource> get_sources_from_file(std::string listfile)
     return sources;
 }
 
-std::vector<KeyText> keysources_to_keytexts(std::vector<KeySource> sources)
+size_t check_exists(const std::vector<KeySource> &sources)
 {
     size_t errors = 0;
-    std::vector<KeyText> keytexts;
     for (auto source : sources)
     {
-        std::ifstream file(source.source);
-
-        if (!file.is_open())
+        if (!std::ifstream(source.source).good())
         {
             std::cout << "Fatal: Could not open file " << source.source
                       << std::endl;
             errors++;
-            continue;
         }
+    }
+    return errors;
+}
 
-        std::string line;
-        std::string text;
-        while (std::getline(file, line))
-        {
-            text += line + "\n";
-        }
-        keytexts.push_back(KeyText{source.key, text});
-    }
-    if (errors > 0)
+KeyText keysource_to_keytext(KeySource source)
+{
+    std::ifstream file(source.source);
+    std::string line;
+    std::string text;
+    while (std::getline(file, line))
     {
-        std::cout << "Fatal: " << errors << " errors occurred." << std::endl;
-        exit(1);
+        text += line + "\n";
     }
+    return KeyText{source.key, text};
+}
+
+std::vector<KeyText> keysources_to_keytexts(std::vector<KeySource> sources)
+{
+    std::vector<KeyText> keytexts;
+    std::transform(sources.begin(),
+                   sources.end(),
+                   std::back_inserter(keytexts),
+                   keysource_to_keytext);
     return keytexts;
+}
+
+KeyBytes keytext_to_keybytes(KeyText text)
+{
+    std::string bytes;
+    for (char c : text.text)
+    {
+        bytes += "\\x" + uint8_to_hex(c);
+    }
+    return KeyBytes{text.key, bytes};
 }
 
 std::vector<KeyBytes> keytexts_to_keybytes(std::vector<KeyText> keytexts)
 {
     std::vector<KeyBytes> keybytes;
-    for (auto keytext : keytexts)
-    {
-        std::string bytes;
-        for (auto c : keytext.text)
-        {
-            bytes += "\\x" + uint8_to_hex(c);
-        }
-        keybytes.push_back(KeyBytes{keytext.key, bytes});
-    }
+    std::transform(keytexts.begin(),
+                   keytexts.end(),
+                   std::back_inserter(keybytes),
+                   keytext_to_keybytes);
     return keybytes;
+}
+
+KeyBytesDivided keybytes_to_keybytesdivided(KeyBytes keybytes, int tabs)
+{
+    size_t size = keybytes.bytes.size();
+    size_t writed = 0;
+    std::string compiled;
+    while (size - writed != 0)
+    {
+        size_t writable = size - writed > 18 * 4 ? 18 * 4 : size - writed;
+        for (int i = 0; i < tabs; i++)
+            compiled += "\t";
+        compiled += "\"";
+        compiled += keybytes.bytes.substr(writed, writable) + "\"\n";
+        writed += writable;
+    }
+    return KeyBytesDivided{keybytes.key, compiled};
 }
 
 std::string compile_output(std::vector<KeyBytes> keybytes)
@@ -114,20 +148,13 @@ std::string compile_output(std::vector<KeyBytes> keybytes)
     for (auto keybyte : keybytes)
     {
         compiled_keybytes += "\t{\"" + keybyte.key + "\",\n";
-        size_t size = keybyte.bytes.size();
-        if (size == 0)
+        if (keybyte.bytes.size() == 0)
         {
             compiled_keybytes += "\t\t\"\",\n";
             continue;
         }
-        size_t writed = 0;
-        while (size - writed != 0)
-        {
-            size_t writable = size - writed > 18 * 4 ? 18 * 4 : size - writed;
-            compiled_keybytes +=
-                "\t\t\"" + keybyte.bytes.substr(writed, writable) + "\"\n";
-            writed += writable;
-        }
+        compiled_keybytes +=
+            keybytes_to_keybytesdivided(keybyte, 2).bytes_divided;
         compiled_keybytes += "\t},\n";
     }
 
@@ -153,6 +180,14 @@ int main(int argc, char **argv)
     std::string outfile = argv[2];
 
     auto sources = get_sources_from_file(listfile);
+
+    int errors = check_exists(sources);
+    if (errors > 0)
+    {
+        std::cout << "Fatal: " << errors << " errors occurred." << std::endl;
+        exit(1);
+    }
+
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
     auto outtext = compile_output(keybytes);
