@@ -80,3 +80,4 @@ build
 ircc
 .vscode
 jjj
+cmake_runtest
