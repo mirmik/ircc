@@ -269,20 +269,14 @@ std::string text_binary_search_function()
 
 std::string text_c_functions()
 {
-    return R"(const char *ircc_c_string(const char *key)
+    return R"(const char *ircc_c_string(const char *key, size_t *sizeptr)
 {
     struct key_value_size *kvs = ircc_binary_search(key);
     if (kvs == NULL)
         return "";
+    if (sizeptr != NULL)
+        *sizeptr = kvs->size;
     return kvs->value;
-}
-
-size_t ircc_size(const char *key)
-{
-    struct key_value_size *kvs = ircc_binary_search(key);
-    if (kvs == NULL)
-        return 0;
-    return kvs->size;
 }
 )";
 }
