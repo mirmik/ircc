@@ -20,7 +20,10 @@ resources.txt:
 another_key ./foo.txt
 ```
 
-If you have files `hello.txt`, `foo.txt`, `resources.txt` then the command `ircc resources.txt ircc_resources.gen.cpp` give you this cpp file:
+If you have files `hello.txt`, `foo.txt`, `resources.txt` then the `ircc` command give you cpp file:
+```
+ircc resources.txt ircc_resources.gen.cpp
+``` 
 ``` 
 #include <map>
 #include <string>
