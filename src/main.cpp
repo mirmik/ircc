@@ -264,7 +264,8 @@ std::string text_binary_search_function()
             return &IRCC_RESOURCES_[mid];
     }
     return NULL;
-})";
+}
+)";
 }
 
 std::string text_c_functions()
