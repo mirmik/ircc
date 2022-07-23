@@ -6,20 +6,24 @@ The program packages the target files into a key-value store that can be connect
 
 If you have files
 
-hello.txt: ```
+hello.txt: 
+```
 HelloWorld
 ```
 
-foo.txt: ```
+foo.txt: 
+```
 HelloUnderWorld
 ```
 
-resources.txt: ```
+resources.txt: 
+```
 /hello ./helloworld.txt
 another_key ./foo.txt
 ```
 
-then the command ``` 
+then the command 
+``` 
 ircc resources.txt ircc_resources.gen.cpp 
 ```
 
