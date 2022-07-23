@@ -78,4 +78,5 @@ build
 *.ninja
 .ninja_*
 ircc
+.vscode
 jjj
