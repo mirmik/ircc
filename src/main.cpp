@@ -141,7 +141,14 @@ KeyBytesDivided keybytes_to_keybytesdivided(KeyBytes keybytes, int tabs)
     return KeyBytesDivided{keybytes.key, compiled};
 }
 
-std::string compile_output(std::vector<KeyBytes> keybytes)
+std::string compile_headers()
+{
+    return R"(#include <map>
+#include <string>
+)";
+}
+
+std::string compile_ircc_resources_map(std::vector<KeyBytes> keybytes)
 {
 
     std::string compiled_keybytes = "";
@@ -158,10 +165,7 @@ std::string compile_output(std::vector<KeyBytes> keybytes)
         compiled_keybytes += "\t},\n";
     }
 
-    return R"(#include <map>
-#include <string>
-
-std::map<std::string, std::string> IRCC_RESOURCES = {
+    return R"(std::map<std::string, std::string> IRCC_RESOURCES = {
 )" + compiled_keybytes +
            R"(};
 )";
@@ -190,9 +194,10 @@ int main(int argc, char **argv)
 
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
-    auto outtext = compile_output(keybytes);
     std::ofstream out(outfile);
-    out << outtext;
+    out << compile_headers();
+    out << "\n";
+    out << compile_ircc_resources_map(keybytes);
     out.close();
     return 0;
 }
