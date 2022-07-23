@@ -1,5 +1,4 @@
 #include <fstream>
-#include <getopt.h>
 #include <iostream>
 #include <map>
 #include <string>
