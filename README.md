@@ -2,6 +2,13 @@
 
 The program packages the target files into a key-value store that can be connected to a C++ program.
 
+## Installation
+```
+cmake .
+cmake --build . 
+cmake --install .
+```
+
 ## Example 
 
 hello.txt: 
