@@ -73,6 +73,8 @@ bindings/arduino/src
 xxx
 runtest
 *.gen.cpp
+*.gen1.cpp
+*.gen2.cpp
 
 build
 *.ninja
@@ -81,5 +83,5 @@ ircc
 .vscode
 jjj
 cmake_runtest
-cmake_runtest1
-cmake_runtest2
+runtest1
+runtest2
