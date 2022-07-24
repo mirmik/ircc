@@ -145,13 +145,15 @@ KeyBytesDivided keybytes_to_keybytesdivided(KeyBytes keybytes, int tabs)
     return KeyBytesDivided{keybytes.key, compiled};
 }
 
-std::string compile_headers(bool cpp_enabled, bool include_map)
+std::string compile_headers(bool cpp_enabled)
 {
     std::string headers;
-    if (include_map)
-        headers += "#include <map>\n";
-    if (cpp_enabled)
+    if (cpp_enabled) 
+    {
         headers += "#include <string>\n";
+        headers += "#include <vector>\n";
+        headers += "#include <utility>\n";
+    }
     headers += "#include <string.h>\n";
     return headers;
 }
@@ -161,14 +163,14 @@ std::string compile_ircc_resources_consts(std::vector<KeyBytes> keybytes)
     std::string compiled;
     for (int i = 0; i < keybytes.size(); i++)
     {
-        compiled += "const char* IRCC_RESOURCES_" + std::to_string(i) + " = \n";
+        compiled += "const char* const IRCC_RESOURCES_" + std::to_string(i) + " = \n";
         compiled += keybytes_to_keybytesdivided(keybytes[i], 2).bytes_divided;
         compiled += ";\n\n";
     }
     return compiled;
 }
 
-std::string compile_ircc_resources_map(std::vector<KeyBytes> keybytes)
+/*std::string compile_ircc_resources_map(std::vector<KeyBytes> keybytes)
 {
 
     std::string compiled_keybytes = "";
@@ -189,9 +191,9 @@ std::string compile_ircc_resources_map(std::vector<KeyBytes> keybytes)
 )" + compiled_keybytes +
            R"(};
 )";
-}
+}*/
 
-std::string compile_ircc_resources_map_by_mnemos(std::vector<KeyBytes> keybytes)
+/*std::string compile_ircc_resources_map_by_mnemos(std::vector<KeyBytes> keybytes)
 {
 
     std::string compiled_keybytes = "";
@@ -211,7 +213,7 @@ std::string compile_ircc_resources_map_by_mnemos(std::vector<KeyBytes> keybytes)
 )" + compiled_keybytes +
            R"(};
 )";
-}
+}*/
 
 std::string compile_ircc_resources_map_cstyle(std::vector<KeyBytes> keybytes)
 {
@@ -271,12 +273,14 @@ std::string text_binary_search_function()
 
 std::string text_c_functions()
 {
-    return R"(extern "C" const char *ircc_c_string(const char *key, size_t *sizeptr);
+    return R"(#ifdef __cplusplus
+extern "C" const char *ircc_c_string(const char *key, size_t *sizeptr);
+#endif
 const char *ircc_c_string(const char *key, size_t *sizeptr)
 {
     struct key_value_size *kvs = ircc_binary_search(key);
     if (kvs == NULL)
-        return "";
+        return NULL;
     if (sizeptr != NULL)
         *sizeptr = kvs->size;
     return kvs->value;
@@ -290,8 +294,25 @@ std::string text_cxx_functions()
 {
     struct key_value_size *kvs = ircc_binary_search(key);
     if (kvs == NULL)
-        return "";
+        return {};
     return std::string(kvs->value, kvs->size);
+}
+
+std::vector<uint8_t> ircc_vector(const char *key)
+{
+    struct key_value_size *kvs = ircc_binary_search(key);
+    if (kvs == NULL)
+        return {};
+    return std::vector<uint8_t>((const uint8_t*)kvs->value, 
+                (const uint8_t*)(kvs->value + kvs->size));
+}
+
+std::pair<const char*, size_t> ircc_pair(const char *key)
+{
+    struct key_value_size *kvs = ircc_binary_search(key);
+    if (kvs == NULL)
+        return {};
+    return std::pair<const char*, size_t>(kvs->value, kvs->size);
 }
 )";
 }
@@ -345,7 +366,6 @@ int main(int argc, char **argv)
             break;
         }
     };
-    bool include_map = CPP_ENABLED;
 
     if (argc < 3)
     {
@@ -367,17 +387,12 @@ int main(int argc, char **argv)
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
     std::ofstream out(OUTFILE);
-    out << compile_headers(CPP_ENABLED, include_map);
+    out << compile_headers(CPP_ENABLED);
     out << "\n";
     out << compile_ircc_resources_consts(keybytes);
     out << text_struct_key_value_size();
     out << "\n";
     out << compile_ircc_resources_map_cstyle(keybytes);
-    if (CPP_ENABLED)
-    {
-        out << "\n";
-        out << compile_ircc_resources_map_by_mnemos(keybytes);
-    }
     out << "\n";
     out << text_binary_search_function();
     out << "\n";

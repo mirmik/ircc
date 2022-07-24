@@ -75,6 +75,9 @@ runtest
 *.gen.cpp
 *.gen1.cpp
 *.gen2.cpp
+*.gen.c
+*.gen1.c
+*.gen2.c
 
 build
 *.ninja

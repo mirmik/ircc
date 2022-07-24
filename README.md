@@ -35,31 +35,51 @@ ircc resources.txt -o ircc_resources.gen.cpp
 #include <map>
 #include <string>
 
-std::map<std::string, std::string> IRCC_RESOURCES = {
-	{"/hello",
-		"\x48\x65\x6C\x6C\x6F\x57\x6F\x72\x6C\x64\x0A"
-	},
-	{"another_key",
-		"\x48\x65\x6C\x6C\x6F\x55\x6E\x64\x65\x72\x57\x6F\x72\x6C\x64\x0A"
-	},
-};
+const char* const IRCC_RESOURCES_0 = 
+		"\x48\x65\x6C\x6C\x6F\x57\x6F\x72\x6C\x64";
+
+const char* const IRCC_RESOURCES_1 = 
+		"\x48\x65\x6C\x6C\x6F\x55\x6E\x64\x65\x72\x57\x6F\x72\x6C\x64";
+
+/// ... key_value_size type
+
+struct key_value_size IRCC_RESOURCES_[] = {
+	{"/hello", IRCC_RESOURCES_0, 10},
+	{"another_key", IRCC_RESOURCES_1, 15},
+	{"/image", IRCC_RESOURCES_2, 38905},
+	{NULL, NULL, 0}};
+
+/// ... helper functions 
 ```
 
 It can be used in program:
 ```
 #include <iostream>
-#include <map>
 #include <string>
 
-extern std::map<std::string, std::string> IRCC_RESOURCES;
+extern std::string ircc_string(const char *key);
 
 int main()
 {
-    std::string hello = IRCC_RESOURCES["/hello"];
+    std::string resource = ircc_string("/hello");
     std::cout << hello << std::endl;
     return 0;
 }
 ``` 
+
+## List of access methods:
+```
+extern std::string ircc_string(const char *key);
+extern std::vector<uint8_t> ircc_vector(const char *key);
+extern std::pair<const char*, size_t> ircc_pair(const char *key);
+extern "C" const char *ircc_c_get(const char *key, size_t *sizeptr);
+```
+
+## C style.
+`ircc` can create c-style files with `c_only` key:
+```
+ircc resources.txt -o ircc_resources.gen.c --c_only 
+```
 
 ## CMake example:
 It can be used with cmake with `add_custom_command`:

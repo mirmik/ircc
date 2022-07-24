@@ -11,3 +11,5 @@ add_executable(cmake_runtest ${SOURCES})
 add_custom_command(OUTPUT ircc_resources.gen.cpp
     COMMAND ircc resources.txt ircc_resources.gen.cpp
 )
+
+target_include_directories(cmake_runtest PRIVATE .)
