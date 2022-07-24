@@ -3,7 +3,7 @@
 The program packages the target files into a key-value store that can be connected to a C++ program.
 
 ## Installation
-```
+```bash
 cmake .
 cmake --build . 
 cmake --install .
@@ -22,16 +22,16 @@ HelloUnderWorld
 ```
 
 resources.txt: 
-```
+```bash
 /hello ./helloworld.txt
 another_key ./foo.txt
 ```
 
 If you have files `hello.txt`, `foo.txt`, `resources.txt` then the `ircc` command give you cpp file:
-```
+```bash
 ircc resources.txt -o ircc_resources.gen.cpp
 ``` 
-``` 
+```c++
 #include <map>
 #include <string>
 
@@ -53,7 +53,7 @@ struct key_value_size IRCC_RESOURCES_[] = {
 ```
 
 It can be used in program:
-```
+```c++
 #include <iostream>
 #include <string>
 
@@ -68,23 +68,29 @@ int main()
 ``` 
 
 ## List of access methods:
-```
+```c++
 extern std::string ircc_string(const char *key);
 extern std::vector<uint8_t> ircc_vector(const char *key);
 extern std::pair<const char*, size_t> ircc_pair(const char *key);
 extern "C" const char *ircc_c_get(const char *key, size_t *sizeptr);
 ```
 
+## Keys iteration methods:
+```c++
+extern std::vector<std::string> ircc_keys();
+extern "C" const char *ircc_name_by_no(size_t no);
+```
+
 ## C style.
 `ircc` can create c-style files with `c_only` key:
-```
+```bash
 ircc resources.txt -o ircc_resources.gen.c --c_only 
 ```
 
 ## CMake example:
 It can be used with cmake with `add_custom_command`:
 
-```
+```cmake
 project(ircc)
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -102,7 +108,7 @@ add_custom_command(OUTPUT ircc_resources.gen.cpp
 
 ## Comments and directory syntax
 If you have project tree like
-```
+```bash
 /
 	web/
 		index.html
@@ -112,12 +118,12 @@ If you have project tree like
 	...
 ```
 then script resources.txt 
-```
+```bash
 # It is directory syntax
 /web/ ./web/
 ```
 will have the same effect as
-```
+```bash
 /web/index.html ./web/index.html
 /web/foo.json ./web/foo.json
 /web/bar.json ./web/bar.json
