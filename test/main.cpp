@@ -46,3 +46,15 @@ TEST_CASE("image")
     auto [resource, size] = ircc_pair("/image");
     CHECK_EQ(size, 38905);
 }
+
+TEST_CASE("find all") 
+{
+    const char* resource;
+    size_t size;
+
+    SUBCASE("a") { auto [resource, size] = ircc_pair("/image"); }
+    SUBCASE("b") { auto [resource, size] = ircc_pair("/hello"); }
+    SUBCASE("c") { auto [resource, size] = ircc_pair("another_key"); }
+
+    CHECK_NE(resource, nullptr);
+}
