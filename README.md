@@ -99,3 +99,26 @@ add_custom_command(OUTPUT ircc_resources.gen.cpp
     COMMAND ircc resources.txt ircc_resources.gen.cpp
 )
 ```
+
+## Comments and directory syntax
+If you have project tree like
+```
+/
+	web/
+		index.html
+		foo.json
+		bar.json
+	resources.txt
+	...
+```
+then script resources.txt 
+```
+# It is directory syntax
+/web/ ./web/
+```
+will have the same effect as
+```
+/web/index.html ./web/index.html
+/web/foo.json ./web/foo.json
+/web/bar.json ./web/bar.json
+```
