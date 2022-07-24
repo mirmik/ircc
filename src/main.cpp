@@ -371,11 +371,12 @@ std::vector<std::string> ircc_keys()
 bool is_rebuild_needed(std::vector<KeySource> keysources, std::string outfile)
 {
     if (!std::filesystem::exists(outfile))
-        return true;   
+        return true;
     if (keysources.size() == 0)
-        return false; 
+        return false;
     /// outfile modification time
-    std::filesystem::file_time_type outfile_mtime = std::filesystem::last_write_time(outfile);
+    std::filesystem::file_time_type outfile_mtime =
+        std::filesystem::last_write_time(outfile);
 
     for (auto keysource : keysources)
     {
@@ -393,9 +394,11 @@ void print_help()
     std::cout << "\t-c, --c_only\tMake C file instead C++\n";
     std::cout << "For build systems compatible:\n";
     std::cout << "\t-s, --sources\tprint list of resourse pathes\n";
-    std::cout << "\t-S, --sources-cmake\tprint list of resourse pathes in cmake compatible format\n";
+    std::cout << "\t-S, --sources-cmake\tprint list of resourse pathes in "
+                 "cmake compatible format\n";
     std::cout << "\t-k, --keys\tprint list of keys\n";
-    std::cout << "\t-n, --is-rebuild-needed\tprint yes if rebuild needed. Otherwise print no.\n";
+    std::cout << "\t-n, --is-rebuild-needed\tprint yes if rebuild needed. "
+                 "Otherwise print no.\n";
 }
 
 int main(int argc, char **argv)
@@ -420,8 +423,8 @@ int main(int argc, char **argv)
     int long_index = 0;
     int opt = 0;
 
-    while ((opt = getopt_long(argc, argv, "hco:ksS", long_options, &long_index)) !=
-           -1)
+    while ((opt = getopt_long(
+                argc, argv, "hco:ksS", long_options, &long_index)) != -1)
     {
         switch (opt)
         {
@@ -490,7 +493,7 @@ int main(int argc, char **argv)
 
     sort_sources(sources);
 
-    if (IS_REBUILD_NEEDED_MODE) 
+    if (IS_REBUILD_NEEDED_MODE)
     {
         if (is_rebuild_needed(sources, OUTFILE))
             std::cout << "yes" << std::endl;
@@ -499,25 +502,28 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    if (PRINT_SOURCES_MODE) 
+    if (PRINT_SOURCES_MODE)
     {
-        for (auto& source : sources) {
+        for (auto &source : sources)
+        {
             std::cout << source.source << "\n";
         }
         exit(0);
     }
 
-    if (PRINT_SOURCES_CMAKE_MODE) 
+    if (PRINT_SOURCES_CMAKE_MODE)
     {
-        for (auto& source : sources) {
+        for (auto &source : sources)
+        {
             std::cout << source.source << ";";
         }
         exit(0);
     }
 
-    if (PRINT_KEYS_MODE) 
+    if (PRINT_KEYS_MODE)
     {
-        for (auto& source : sources) {
+        for (auto &source : sources)
+        {
             std::cout << source.key << "\n";
         }
         exit(0);
