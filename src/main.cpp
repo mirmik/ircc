@@ -374,23 +374,32 @@ void print_help()
     std::cout << "Options:\n";
     std::cout << "\t-h, --help\tShow this help\n";
     std::cout << "\t-c, --c_only\tMake C file instead C++\n";
+    std::cout << "\t-s, --sources\tprint list of resourse pathes\n";
+    std::cout << "\t-S, --sources-cmake\tprint list of resourse pathes in cmake compatible format\n";
+    std::cout << "\t-k, --keys\tprint list of keys\n";
 }
 
 int main(int argc, char **argv)
 {
     bool CPP_ENABLED = true;
-    std::string OUTFILE = "ircc_resources.gen.cpp";
+    bool PRINT_KEYS_MODE = false;
+    bool PRINT_SOURCES_MODE = false;
+    bool PRINT_SOURCES_CMAKE_MODE = false;
+    std::string OUTFILE = {};
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"c_only", no_argument, NULL, 'c'},
         {"output", required_argument, NULL, 'o'},
+        {"sources", no_argument, NULL, 's'},
+        {"sources-cmake", no_argument, NULL, 'S'},
+        {"keys", no_argument, NULL, 'k'},
     };
 
     int long_index = 0;
     int opt = 0;
 
-    while ((opt = getopt_long(argc, argv, "hco:", long_options, &long_index)) !=
+    while ((opt = getopt_long(argc, argv, "hco:ks", long_options, &long_index)) !=
            -1)
     {
         switch (opt)
@@ -405,6 +414,18 @@ int main(int argc, char **argv)
 
         case 'o':
             OUTFILE = optarg;
+            break;
+
+        case 'k':
+            PRINT_KEYS_MODE = true;
+            break;
+
+        case 's':
+            PRINT_SOURCES_MODE = true;
+            break;
+
+        case 'S':
+            PRINT_SOURCES_CMAKE_MODE = true;
             break;
 
         case '?':
@@ -425,6 +446,13 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
+    if (OUTFILE.empty())
+    {
+        std::cout << "Output file is needed. Use -o option.\n";
+        print_help();
+        exit(-1);
+    }
+
     std::string listfile = argv[optind];
     auto sources = get_sources_from_file(listfile);
 
@@ -436,6 +464,31 @@ int main(int argc, char **argv)
     }
 
     sort_sources(sources);
+
+    if (PRINT_SOURCES_MODE) 
+    {
+        for (auto& source : sources) {
+            std::cout << source.source << "\n";
+        }
+        exit(0);
+    }
+
+    if (PRINT_SOURCES_CMAKE_MODE) 
+    {
+        for (auto& source : sources) {
+            std::cout << source.source << ";";
+        }
+        exit(0);
+    }
+
+    if (PRINT_KEYS_MODE) 
+    {
+        for (auto& source : sources) {
+            std::cout << source.key << "\n";
+        }
+        exit(0);
+    }
+
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
     std::ofstream out(OUTFILE);
