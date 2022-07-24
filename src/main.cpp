@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -54,6 +55,46 @@ std::string uint8_to_hex(uint8_t in)
     return {buf, 2};
 }
 
+std::string trim(const std::string &view)
+{
+    if (view.size() == 0)
+        return "";
+
+    const char *left = view.data();
+    const char *right = view.data() + view.size() - 1;
+    const char *end = view.data() + view.size();
+
+    while (left != end &&
+           (*left == ' ' || *left == '\n' || *left == '\r' || *left == '\t'))
+        ++left;
+
+    if (left == end)
+        return "";
+
+    while (left != right && (*right == ' ' || *right == '\n' ||
+                             *right == '\r' || *right == '\t'))
+        --right;
+
+    return {left, ((size_t)(right - left) + 1)};
+}
+
+bool is_directory(const std::string &path)
+{
+    return std::filesystem::is_directory(path);
+}
+
+void for_each_directory_file_recursive(
+    const std::string &path, std::function<void(const std::string &)> func)
+{
+    for (auto &p : std::filesystem::directory_iterator(path))
+    {
+        if (std::filesystem::is_directory(p))
+            for_each_directory_file_recursive(p.path().string(), func);
+        else
+            func(p.path().string());
+    }
+}
+
 std::vector<KeySource> get_sources_from_file(std::string listfile)
 {
     std::vector<KeySource> sources;
@@ -61,9 +102,32 @@ std::vector<KeySource> get_sources_from_file(std::string listfile)
     std::string line;
     while (std::getline(file, line))
     {
-        std::string key = line.substr(0, line.find(" "));
-        std::string source = line.substr(line.find(" ") + 1);
-        sources.push_back(KeySource{key, source});
+        auto trimmed_line = trim(line);
+        if (trimmed_line.size() == 0)
+            continue;
+        if (trimmed_line[0] == '#')
+            continue;
+
+        std::string key = trimmed_line.substr(0, trimmed_line.find(" "));
+        std::string source = trimmed_line.substr(trimmed_line.find(" ") + 1);
+
+        if (is_directory(source))
+        {
+            for_each_directory_file_recursive(
+                source,
+                [&sources, &source, &key](const std::string &file)
+                {
+                    auto filepath = std::filesystem::path(file);
+                    auto dirpath = std::filesystem::path(source);
+                    auto relative_path = filepath.lexically_relative(dirpath);
+                    auto join_path = key + std::string(relative_path);
+                    sources.push_back(KeySource{join_path, file});
+                });
+        }
+        else
+        {
+            sources.push_back(KeySource{key, source});
+        }
     }
     return sources;
 }
@@ -85,10 +149,10 @@ size_t check_exists(const std::vector<KeySource> &sources)
 
 void sort_sources(std::vector<KeySource> &sources)
 {
-    std::sort(sources.begin(), sources.end(),
-              [](const KeySource &a, const KeySource &b) {
-                  return a.key < b.key;
-              });
+    std::sort(sources.begin(),
+              sources.end(),
+              [](const KeySource &a, const KeySource &b)
+              { return a.key < b.key; });
 }
 
 KeyText keysource_to_keytext(KeySource source)
@@ -139,6 +203,15 @@ KeyBytesDivided keybytes_to_keybytesdivided(KeyBytes keybytes, int tabs)
     size_t size = keybytes.bytes.size();
     size_t writed = 0;
     std::string compiled;
+
+    if (size == 0)
+    {
+        for (int i = 0; i < tabs; i++)
+            compiled += "\t";
+        compiled += "\"\"\n";
+        return KeyBytesDivided{keybytes.key, compiled};
+    }
+
     while (size - writed != 0)
     {
         size_t writable = size - writed > 18 * 4 ? 18 * 4 : size - writed;
@@ -156,7 +229,7 @@ KeyBytesDivided keybytes_to_keybytesdivided(KeyBytes keybytes, int tabs)
 std::string compile_headers(bool cpp_enabled)
 {
     std::string headers;
-    if (cpp_enabled) 
+    if (cpp_enabled)
     {
         headers += "#include <string>\n";
         headers += "#include <vector>\n";
@@ -171,7 +244,8 @@ std::string compile_ircc_resources_consts(std::vector<KeyBytes> keybytes)
     std::string compiled;
     for (int i = 0; i < keybytes.size(); i++)
     {
-        compiled += "const char* const IRCC_RESOURCES_" + std::to_string(i) + " = \n";
+        compiled +=
+            "const char* const IRCC_RESOURCES_" + std::to_string(i) + " = \n";
         compiled += keybytes_to_keybytesdivided(keybytes[i], 2).bytes_divided;
         compiled += ";\n\n";
     }
@@ -186,11 +260,6 @@ std::string compile_ircc_resources_map_cstyle(std::vector<KeyBytes> keybytes)
     for (size_t i = 0; i < keybytes.size(); ++i)
     {
         compiled += "\t{\"" + keybytes[i].key + "\", ";
-        if (keybytes[i].bytes.size() == 0)
-        {
-            compiled += "\t\t\"\",\n";
-            continue;
-        }
         compiled += "IRCC_RESOURCES_" + std::to_string(i);
         compiled += ", ";
         compiled += std::to_string(keybytes[i].bytes.size() / 4);
