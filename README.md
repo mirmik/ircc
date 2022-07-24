@@ -1,4 +1,4 @@
-# Very simple c++ resource compiler
+# Simple c++ resource compiler
 
 The program packages the target files into a key-value store that can be connected to a C++ program.
 
