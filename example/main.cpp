@@ -44,8 +44,13 @@ int make_server(std::string host, int port)
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
-        return -1;
+        perror("socket");
+        exit(-1);
     }
+
+    int optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -53,7 +58,8 @@ int make_server(std::string host, int port)
     serv_addr.sin_addr.s_addr = inet_addr(host.c_str());
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-        return -1;
+        perror("bind");
+        exit(-1);
     }
     listen(sockfd, 5);
     return sockfd;
@@ -132,10 +138,6 @@ int main()
     server = make_server("0.0.0.0", 8080);
     std::cout << "Server started: port:8080" << std::endl;
 
-    // reuse address
-    int optval = 1;
-    setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-
     while (true)
     {
         struct sockaddr_in serv_addr;
@@ -144,7 +146,7 @@ int main()
             accept(server, (struct sockaddr *)&serv_addr, &serv_addr_len);
         if (client < 0)
         {
-            std::cout << "accept error" << std::endl;
+            perror("accept");
             break;
         }
         std::thread(client_thread_fn, client).detach();
