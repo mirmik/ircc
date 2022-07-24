@@ -317,34 +317,49 @@ const char *ircc_c_string(const char *key, size_t *sizeptr)
         *sizeptr = kvs->size;
     return kvs->value;
 }
+
+const char *ircc_name_by_no(size_t no)
+{
+    return IRCC_RESOURCES_[no].key;
+}
 )";
 }
 
 std::string text_cxx_functions()
 {
-    return R"(std::string ircc_string(const char *key)
+    return R"(std::string ircc_string(const std::string& key)
 {
-    struct key_value_size *kvs = ircc_binary_search(key);
+    struct key_value_size *kvs = ircc_binary_search(key.c_str());
     if (kvs == NULL)
         return {};
     return std::string(kvs->value, kvs->size);
 }
 
-std::vector<uint8_t> ircc_vector(const char *key)
+std::vector<uint8_t> ircc_vector(const std::string& key)
 {
-    struct key_value_size *kvs = ircc_binary_search(key);
+    struct key_value_size *kvs = ircc_binary_search(key.c_str());
     if (kvs == NULL)
         return {};
     return std::vector<uint8_t>((const uint8_t*)kvs->value, 
                 (const uint8_t*)(kvs->value + kvs->size));
 }
 
-std::pair<const char*, size_t> ircc_pair(const char *key)
+std::pair<const char*, size_t> ircc_pair(const std::string& key)
 {
-    struct key_value_size *kvs = ircc_binary_search(key);
+    struct key_value_size *kvs = ircc_binary_search(key.c_str());
     if (kvs == NULL)
         return {};
     return std::pair<const char*, size_t>(kvs->value, kvs->size);
+}
+
+std::vector<std::string> ircc_names()
+{
+    std::vector<std::string> list;
+    for (int i = 0; IRCC_RESOURCES_[i].key != NULL; i++)
+    {
+        list.push_back(IRCC_RESOURCES_[i].key);
+    }
+    return list;
 }
 )";
 }
