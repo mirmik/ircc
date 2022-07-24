@@ -130,6 +130,7 @@ int main()
 {
     /// simple http server
     server = make_server("0.0.0.0", 8080);
+    std::cout << "Server started: port:8080" << std::endl;
 
     // reuse address
     int optval = 1;
