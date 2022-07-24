@@ -33,8 +33,7 @@ If you have files `hello.txt`, `foo.txt`, `resources.txt` then the `ircc` comman
 ircc resources.txt -o ircc_resources.gen.cpp
 ``` 
 ```c++
-#include <map>
-#include <string>
+/// ... headers
 
 const char* const IRCC_RESOURCES_0 = 
 		"\x48\x65\x6C\x6C\x6F\x57\x6F\x72\x6C\x64";
