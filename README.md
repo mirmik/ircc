@@ -1,4 +1,4 @@
-# Simple c++ resource compiler
+# Simple c/c++ resource compiler
 
 The `ircc` program packages the target files into a key-value store that can be connected to a C++ and C program.
 
