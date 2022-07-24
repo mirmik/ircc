@@ -368,6 +368,23 @@ std::vector<std::string> ircc_keys()
 )";
 }
 
+bool is_rebuild_needed(std::vector<KeySource> keysources, std::string outfile)
+{
+    if (!std::filesystem::exists(outfile))
+        return true;   
+    if (keysources.size() == 0)
+        return false; 
+    /// outfile modification time
+    std::filesystem::file_time_type outfile_mtime = std::filesystem::last_write_time(outfile);
+
+    for (auto keysource : keysources)
+    {
+        if (std::filesystem::last_write_time(keysource.source) > outfile_mtime)
+            return true;
+    }
+    return false;
+}
+
 void print_help()
 {
     std::cout << "Usage: ircc [options] [file]\n";
@@ -377,6 +394,7 @@ void print_help()
     std::cout << "\t-s, --sources\tprint list of resourse pathes\n";
     std::cout << "\t-S, --sources-cmake\tprint list of resourse pathes in cmake compatible format\n";
     std::cout << "\t-k, --keys\tprint list of keys\n";
+    std::cout << "\t-n, --is-rebuild-needed\tprint yes if rebuild needed. Otherwise print no.\n";
 }
 
 int main(int argc, char **argv)
@@ -385,6 +403,7 @@ int main(int argc, char **argv)
     bool PRINT_KEYS_MODE = false;
     bool PRINT_SOURCES_MODE = false;
     bool PRINT_SOURCES_CMAKE_MODE = false;
+    bool IS_REBUILD_NEEDED_MODE = false;
     std::string OUTFILE = {};
 
     const struct option long_options[] = {
@@ -393,13 +412,14 @@ int main(int argc, char **argv)
         {"output", required_argument, NULL, 'o'},
         {"sources", no_argument, NULL, 's'},
         {"sources-cmake", no_argument, NULL, 'S'},
+        {"is-rebuild-needed", no_argument, NULL, 'n'},
         {"keys", no_argument, NULL, 'k'},
     };
 
     int long_index = 0;
     int opt = 0;
 
-    while ((opt = getopt_long(argc, argv, "hco:ks", long_options, &long_index)) !=
+    while ((opt = getopt_long(argc, argv, "hco:ksS", long_options, &long_index)) !=
            -1)
     {
         switch (opt)
@@ -426,6 +446,10 @@ int main(int argc, char **argv)
 
         case 'S':
             PRINT_SOURCES_CMAKE_MODE = true;
+            break;
+
+        case 'n':
+            IS_REBUILD_NEEDED_MODE = true;
             break;
 
         case '?':
@@ -464,6 +488,15 @@ int main(int argc, char **argv)
     }
 
     sort_sources(sources);
+
+    if (IS_REBUILD_NEEDED_MODE) 
+    {
+        if (is_rebuild_needed(sources, OUTFILE))
+            std::cout << "yes" << std::endl;
+        else
+            std::cout << "no" << std::endl;
+        exit(0);
+    }
 
     if (PRINT_SOURCES_MODE) 
     {
