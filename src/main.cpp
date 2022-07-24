@@ -356,7 +356,7 @@ std::pair<const char*, size_t> ircc_pair(const std::string& key)
     return std::pair<const char*, size_t>(kvs->value, kvs->size);
 }
 
-std::vector<std::string> ircc_names()
+std::vector<std::string> ircc_keys()
 {
     std::vector<std::string> list;
     for (int i = 0; IRCC_RESOURCES_[i].key != NULL; i++)
