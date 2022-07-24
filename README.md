@@ -8,6 +8,7 @@ cmake .
 cmake --build . 
 cmake --install .
 ```
+It install `ircc` binary and `ircc/ircc.h` header. Header contains access and list methods for c and c++ projects.
 
 ## Example 
 
