@@ -418,11 +418,11 @@ int main(int argc, char **argv)
         }
     };
 
-    if (argc < 3)
+    if (optind >= argc)
     {
-        std::cout << "Usage: " << argv[0] << " <listfile>"
-                  << " <outcpp>" << std::endl;
-        return 1;
+        std::cout << "No input file\n";
+        print_help();
+        exit(-1);
     }
 
     std::string listfile = argv[optind];
