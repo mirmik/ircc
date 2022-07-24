@@ -132,11 +132,18 @@ void client_thread_fn(int client_fd)
 
 int server;
 
-int main()
+int main(int argc, const char * argv[])
 {
+    int port;
+    if (argc >= 2) {
+        port = atoi(argv[1]);
+    } else {
+        port = 8080;
+    }
+
     /// simple http server
-    server = make_server("0.0.0.0", 8080);
-    std::cout << "Server started: port:8080" << std::endl;
+    server = make_server("0.0.0.0", port);
+    std::cout << "Server started: port:" << port << std::endl;
 
     while (true)
     {
