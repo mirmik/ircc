@@ -40,3 +40,9 @@ TEST_CASE("pair")
     CHECK_EQ(size, 15);
     CHECK_EQ(strcmp("HelloUnderWorld", resource), 0);
 }
+
+TEST_CASE("image") 
+{
+    auto [resource, size] = ircc_pair("/image");
+    CHECK_EQ(size, 38905);
+}

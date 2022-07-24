@@ -83,6 +83,14 @@ size_t check_exists(const std::vector<KeySource> &sources)
     return errors;
 }
 
+void sort_sources(std::vector<KeySource> &sources)
+{
+    std::sort(sources.begin(), sources.end(),
+              [](const KeySource &a, const KeySource &b) {
+                  return a.key < b.key;
+              });
+}
+
 KeyText keysource_to_keytext(KeySource source)
 {
     char buf[1024];
@@ -169,51 +177,6 @@ std::string compile_ircc_resources_consts(std::vector<KeyBytes> keybytes)
     }
     return compiled;
 }
-
-/*std::string compile_ircc_resources_map(std::vector<KeyBytes> keybytes)
-{
-
-    std::string compiled_keybytes = "";
-    for (auto keybyte : keybytes)
-    {
-        compiled_keybytes += "\t{\"" + keybyte.key + "\",\n";
-        if (keybyte.bytes.size() == 0)
-        {
-            compiled_keybytes += "\t\t\"\",\n";
-            continue;
-        }
-        compiled_keybytes +=
-            keybytes_to_keybytesdivided(keybyte, 2).bytes_divided + "\n";
-        compiled_keybytes += "\t},\n";
-    }
-
-    return R"(std::map<std::string, std::string> IRCC_RESOURCES = {
-)" + compiled_keybytes +
-           R"(};
-)";
-}*/
-
-/*std::string compile_ircc_resources_map_by_mnemos(std::vector<KeyBytes> keybytes)
-{
-
-    std::string compiled_keybytes = "";
-    for (size_t i = 0; i < keybytes.size(); ++i)
-    {
-        compiled_keybytes += "\t{\"" + keybytes[i].key + "\", ";
-        if (keybytes[i].bytes.size() == 0)
-        {
-            compiled_keybytes += "\t\t\"\",\n";
-            continue;
-        }
-        compiled_keybytes += "IRCC_RESOURCES_" + std::to_string(i);
-        compiled_keybytes += "},\n";
-    }
-
-    return R"(std::map<std::string, std::string> IRCC_RESOURCES = {
-)" + compiled_keybytes +
-           R"(};
-)";
-}*/
 
 std::string compile_ircc_resources_map_cstyle(std::vector<KeyBytes> keybytes)
 {
@@ -384,6 +347,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    sort_sources(sources);
     auto texts = keysources_to_keytexts(sources);
     auto keybytes = keytexts_to_keybytes(texts);
     std::ofstream out(OUTFILE);
