@@ -6,9 +6,9 @@
 #include <string>
 
 extern "C" const char *ircc_c_string(const char *key, size_t *sz);
-extern std::string ircc_string(const char *key);
-extern std::vector<uint8_t> ircc_vector(const char *key);
-extern std::pair<const char *, size_t> ircc_pair(const char *key);
+extern std::string ircc_string(const std::string &key);
+extern std::vector<uint8_t> ircc_vector(const std::string &key);
+extern std::pair<const char *, size_t> ircc_pair(const std::string &key);
 
 TEST_CASE("c_string")
 {

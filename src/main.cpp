@@ -236,6 +236,7 @@ std::string compile_headers(bool cpp_enabled)
         headers += "#include <utility>\n";
     }
     headers += "#include <string.h>\n";
+    headers += "#include <stdlib.h>\n";
     return headers;
 }
 
@@ -318,6 +319,9 @@ const char *ircc_c_string(const char *key, size_t *sizeptr)
     return kvs->value;
 }
 
+#ifdef __cplusplus
+extern "C" const char *ircc_name_by_no(size_t no);
+#endif
 const char *ircc_name_by_no(size_t no)
 {
     return IRCC_RESOURCES_[no].key;
