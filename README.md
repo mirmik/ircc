@@ -83,7 +83,7 @@ extern "C" const char *ircc_name_by_no(size_t no);
 ```
 
 ## C style.
-`ircc` can create c-style files with `c_only` key:
+`ircc` can create c-style files with `c_only` key (Only c-style functions will be added):
 ```bash
 ircc resources.txt -o ircc_resources.gen.c --c_only 
 ```
