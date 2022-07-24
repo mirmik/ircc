@@ -391,6 +391,7 @@ void print_help()
     std::cout << "Options:\n";
     std::cout << "\t-h, --help\tShow this help\n";
     std::cout << "\t-c, --c_only\tMake C file instead C++\n";
+    std::cout << "For build systems compatible:\n";
     std::cout << "\t-s, --sources\tprint list of resourse pathes\n";
     std::cout << "\t-S, --sources-cmake\tprint list of resourse pathes in cmake compatible format\n";
     std::cout << "\t-k, --keys\tprint list of keys\n";
