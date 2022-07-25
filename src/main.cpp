@@ -10,25 +10,25 @@
 struct KeySource
 {
     std::string key;
-    std::string source;
+    std::string source; //< path to source file
 };
 
 struct KeyText
 {
     std::string key;
-    std::string text;
+    std::string text; // < raw file text
 };
 
 struct KeyBytes
 {
     std::string key;
-    std::string bytes;
+    std::string bytes; // < text in C format ( \xAB\x01\x02... )  
 };
 
 struct KeyBytesDivided
 {
     std::string key;
-    std::string bytes_divided;
+    std::string bytes_divided; // < text in C format divided to many strings
 };
 
 uint8_t HIHALF(uint8_t byte)
