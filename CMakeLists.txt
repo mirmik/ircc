@@ -10,7 +10,7 @@ set(SOURCES
 add_executable(ircc ${SOURCES})
 set_target_properties(ircc PROPERTIES PUBLIC_HEADER src/ircc.h)
 
-target_link_libraries(ircc igris)
+target_link_libraries(ircc)
 
 install(TARGETS ircc 
 	DESTINATION /usr/local/bin	
